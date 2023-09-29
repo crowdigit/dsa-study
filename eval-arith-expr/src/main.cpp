@@ -60,11 +60,6 @@ auto precedence(Operator const op) -> int
     return -1;
 }
 
-/*
- * 1+2*3
- * 123*+
- */
-
 auto process_subexpr(
         queue<variant<int, Operator>>& post_expr,
         stack<Operator>& operators,
