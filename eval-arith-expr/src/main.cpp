@@ -10,47 +10,57 @@
 
 using namespace std;
 
-auto process_subexpr(
-        queue<variant<int, Operator>>& post_expr,
+auto process_token(
+        queue<variant<int, Operator>>& tokens,
         stack<Operator>& operators,
-        string_view subexpr)
+        string_view token)
 {
-    auto const result = Operator::is_operator(subexpr);
+    auto const result = Operator::is_operator(token);
     if (!result.has_value()) {
         int v = 0;
-        from_chars(subexpr.data(), subexpr.data() + subexpr.size(), v, 10);
-        post_expr.push(v);
+        from_chars(token.data(), token.data() + token.size(), v, 10);
+        tokens.push(v);
         return;
     }
 
     auto const op = result.value();
+    if (op.type() == Operator::type::bracket_close) {
+        while (!operators.empty()) {
+            auto const top = operators.top();
+            operators.pop();
+            if (top.type() == Operator::type::bracket_open)
+                return;
+            tokens.push(top);
+        }
+    }
 
     while (!operators.empty()) {
         auto const top = operators.top();
         if (top < op)
             break;
-        post_expr.push(top);
+        else if (top.type() == Operator::type::bracket_open)
+            break;
+        tokens.push(top);
         operators.pop();
     }
-
     operators.push(op);
 }
 
 auto to_postfix(string const& input) -> queue<variant<int, Operator>>
 {
-    queue<variant<int, Operator>> post_expr;
+    queue<variant<int, Operator>> tokens;
     stack<Operator> operators;
     Expression expr(input);
 
-    for (auto const subexpr : expr)
-        process_subexpr(post_expr, operators, subexpr);
+    for (auto const token : expr)
+        process_token(tokens, operators, token);
 
     while (!operators.empty()) {
-        post_expr.push(operators.top());
+        tokens.push(operators.top());
         operators.pop();
     }
 
-    return post_expr;
+    return tokens;
 }
 
 auto evaluate(string const& input) -> int
@@ -78,8 +88,8 @@ auto evaluate(string const& input) -> int
 
 auto main(void) -> int
 {
-    auto const input = "2 + 2 ^ 3 ^ 2 * 4" ;
-    auto const expected = 2 + pow(2, pow(3, 2)) * 4;
+    auto const input = "3 * ( 1 + 2 ) ^ ( 1 + 2 ) ^ 2";
+    auto const expected = 3 * pow(1 + 2, pow(1 + 2, 2));
     auto const got = evaluate(input);
 
     cout << "input: " << input << endl;

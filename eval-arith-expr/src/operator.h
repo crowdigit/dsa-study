@@ -12,6 +12,8 @@ public:
         multiply,
         divide,
         power,
+        bracket_open,
+        bracket_close,
     };
 
     enum class associativity {
@@ -30,9 +32,10 @@ public:
     auto precedence() const -> int;
     auto associativity() const -> associativity;
     auto evaluate(int const a, int const b) const -> int;
+    auto type() const -> type;
 
 private:
-    type _type;
+    enum type _type;
 };
 
 #endif
