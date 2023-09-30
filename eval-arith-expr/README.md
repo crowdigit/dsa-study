@@ -10,8 +10,8 @@ auto const got = evaluate(input);
 
 ## TODO Lists
 
-* [ ] Bracket support
-* [ ] Right associative (`^`) operator
+* [x] Bracket support
+* [x] Right associative (`^`) operator
 
 ## This is so cool!!1!!1 How can I build it?
 
