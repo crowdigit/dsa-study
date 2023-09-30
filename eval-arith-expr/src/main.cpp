@@ -11,61 +11,78 @@
 
 using namespace std;
 
-enum Operator {
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
-    Power,
+class Operator {
+public:
+    enum class type {
+        Plus,
+        Minus,
+        Multiply,
+        Divide,
+        Power,
+    };
+
+    static auto is_operator(string_view input) -> optional<Operator>
+    {
+        if (input == "+") return Operator(type::Plus);
+        if (input == "-") return Operator(type::Minus);
+        if (input == "*") return Operator(type::Multiply);
+        if (input == "/") return Operator(type::Divide);
+        if (input == "^") return Operator(type::Power);
+        return nullopt;
+    }
+
+    Operator(Operator const& o)
+        : _type(o._type)
+    { }
+
+    Operator(type const type)
+        : _type(type)
+    { }
+
+    explicit operator char () const {
+        switch (_type) {
+            case type::Plus: return '+';
+            case type::Minus: return '-';
+            case type::Multiply: return '*';
+            case type::Divide: return '/';
+            case type::Power: return '^';
+        }
+        throw runtime_error("invalid operator");
+    }
+
+    auto precedence() const -> int
+    {
+        switch (_type) {
+            case type::Plus: return 1;
+            case type::Minus: return 1;
+            case type::Multiply: return 2;
+            case type::Divide: return 2;
+            case type::Power: return 3;
+        }
+        throw runtime_error("invalid operator");
+    }
+
+    auto evaluate(int const a, int const b) const -> int
+    {
+        switch (_type) {
+        case type::Plus: return a + b;
+        case type::Minus: return a - b;
+        case type::Multiply: return a * b;
+        case type::Divide: return a / b;
+        case type::Power: return pow(a, b);
+        }
+    }
+
+private:
+    type _type;
 };
-
-auto to_operator(string_view input) -> optional<tuple<Operator, int>>
-{
-    if (input == "+") return tuple {Plus, 1};
-    if (input == "-") return tuple {Minus, 1};
-    if (input == "*") return tuple {Multiply, 2};
-    if (input == "/") return tuple {Divide, 2};
-    if (input == "^") return tuple {Power, 3};
-    return nullopt;
-}
-
-auto to_char(Operator const op) -> char
-{
-    switch (op) {
-    case Plus:
-        return '+';
-    case Minus:
-        return '-';
-    case Multiply:
-        return '*';
-    case Divide:
-        return '/';
-    case Power:
-        return '^';
-    }
-}
-
-auto precedence(Operator const op) -> int
-{
-    switch (op) {
-    case Plus:
-    case Minus:
-        return 1;
-    case Multiply:
-    case Divide:
-        return 2;
-    case Power:
-        return 3;
-    }
-    return -1;
-}
 
 auto process_subexpr(
         queue<variant<int, Operator>>& post_expr,
         stack<Operator>& operators,
         string_view subexpr)
 {
-    auto const result = to_operator(subexpr);
+    auto const result = Operator::is_operator(subexpr);
     if (!result.has_value()) {
         int v = 0;
         from_chars(subexpr.data(), subexpr.data() + subexpr.size(), v, 10);
@@ -73,11 +90,11 @@ auto process_subexpr(
         return;
     }
 
-    auto const [op, prec] = result.value();
+    auto const op = result.value();
 
     while (!operators.empty()) {
         auto const top = operators.top();
-        if (precedence(top) < prec)
+        if (top.precedence() < op.precedence())
             break;
         post_expr.push(top);
         operators.pop();
@@ -103,17 +120,6 @@ auto to_postfix(string const& input) -> queue<variant<int, Operator>>
     return post_expr;
 }
 
-auto evaluate_sub(Operator const op, int const a, int const b) -> int
-{
-    switch (op) {
-    case Plus: return a + b;
-    case Minus: return a - b;
-    case Multiply: return a * b;
-    case Divide: return a / b;
-    case Power: return pow(a, b);
-    }
-}
-
 auto evaluate(string const& input) -> int
 {
     auto postfix = to_postfix(input);
@@ -129,7 +135,7 @@ auto evaluate(string const& input) -> int
             auto const op = get<1>(token);
             auto const b = operands.top(); operands.pop();
             auto const a = operands.top(); operands.pop();
-            operands.push(evaluate_sub(op, a, b));
+            operands.push(op.evaluate(a, b));
             break;
         }
     }
