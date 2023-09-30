@@ -78,8 +78,8 @@ auto evaluate(string const& input) -> int
 
 auto main(void) -> int
 {
-    auto const input = "1 + 4 * 2";
-    auto const expected = 1 + 4 * 2;
+    auto const input = "2 + 2 ^ 3 ^ 2 * 4" ;
+    auto const expected = 2 + pow(2, pow(3, 2)) * 4;
     auto const got = evaluate(input);
 
     cout << "input: " << input << endl;

@@ -36,7 +36,7 @@ auto Operator::operator < (Operator const& rhs) const -> bool
     auto const l_prec = precedence();
     auto const r_prec = rhs.precedence();
     if (l_prec != r_prec) return l_prec < r_prec;
-    return rhs.associativity() == associativity::right;
+    return rhs.associativity() == associativity::left;
 }
 
 
