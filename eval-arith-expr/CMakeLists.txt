@@ -6,6 +6,7 @@ ADD_EXECUTABLE (
     foo
     ./src/main.cpp
     ./src/expression.cpp
+    ./src/operator.cpp
 )
 
 SET_PROPERTY (TARGET foo PROPERTY CXX_STANDARD 17)
