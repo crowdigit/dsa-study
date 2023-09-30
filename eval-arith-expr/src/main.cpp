@@ -27,7 +27,7 @@ auto process_subexpr(
 
     while (!operators.empty()) {
         auto const top = operators.top();
-        if (top.precedence() < op.precedence())
+        if (top < op)
             break;
         post_expr.push(top);
         operators.pop();
